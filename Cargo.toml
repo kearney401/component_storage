@@ -2,6 +2,13 @@
 name = "component_storage"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Simple library to pack components based on type in continous arrays"
+# homepage = ""
+# documentation = ""
+repository = "https://github.com/kearney401/component_storage"
+readme = "README.md"
+keywords = ["gamedev", "ecs"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
