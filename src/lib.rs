@@ -121,6 +121,30 @@ impl ComponentStorage {
         self.get_mut_vec::<T>()
     }
 
+    pub fn get_components_unwrapped<T>(&self) -> Option<Vec<&T>> where T: 'static { 
+        
+        if let Some(vec_t) = self.get_vec::<T>() { 
+            let collection = vec_t.iter()
+                .filter_map(|v| v.as_ref())
+                .collect::<Vec<&T>>();
+            return Some(collection);
+        }
+
+        None
+    }
+
+    pub fn get_mut_components_unwrapped<T>(&mut self) -> Option<Vec<&mut T>> where T: 'static { 
+        
+        if let Some(vec_t) = self.get_mut_vec::<T>() { 
+            let collection = vec_t.iter_mut()
+                .filter_map(|v| v.as_mut())
+                .collect::<Vec<&mut T>>();
+            return Some(collection);
+        }
+
+        None
+    }
+
     pub fn remove_component<T>(&mut self, index: usize) where T: 'static { 
         match self.get_mut_vec::<T>() { 
             Some(vec_t) => { 
@@ -275,7 +299,17 @@ mod tests {
         let mut cs = ComponentStorage::default();
         cs.add_component(0, Bar { x: 100 });
         match cs.get_components::<Bar>() { 
-            Some(_) => { }
+            Some(vec_t) => { assert_eq!(vec_t.len(), 1); }
+            None => { panic!("Failed to get iter for components")}
+        };
+    }
+
+    #[test]
+    fn get_components_unwrapped() { 
+        let mut cs = ComponentStorage::default();
+        cs.add_component(0, Foo { });
+        match cs.get_components_unwrapped::<Foo>() { 
+            Some(vec_t) => { assert_eq!(vec_t.len(), 1); }
             None => { panic!("Failed to get iter for components")}
         };
     }
@@ -285,11 +319,20 @@ mod tests {
         let mut cs = ComponentStorage::default();
         cs.add_component(0, Bar { x: 100 });
         match cs.get_mut_components::<Bar>() { 
-            Some(_) => { }
+            Some(vec_t) => { assert_eq!(vec_t.len(), 1); }
             None => { panic!("Failed to get iter for components")}
         };
     }
 
+    #[test]
+    fn get_mut_components_unwrapped() { 
+        let mut cs = ComponentStorage::default();
+        cs.add_component(0, Foo { });
+        match cs.get_mut_components_unwrapped::<Foo>() { 
+            Some(vec_t) => { assert_eq!(vec_t.len(), 1); }
+            None => { panic!("Failed to get iter for components")}
+        };
+    }
     #[test]
     fn remove_component() { 
         let mut cs = ComponentStorage::default();

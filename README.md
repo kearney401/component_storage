@@ -35,18 +35,30 @@ Example
         let vel_from_cs = cs.get_component::<Velocity>(0).unwrap();
         println!("Entity: 0 - {:?} {:?}", pos_from_cs, vel_from_cs);
 
-        let pos = cs.get_components::<Position>().unwrap();
-
         println!("---------Position Check---------");
-        for (index, pos) in pos.iter().enumerate() { 
-            println!("Entity: {} - {:?}", index, pos);
-        } 
+        if let Some(positions) = cs.get_components::<Position>() { 
+            for (index, pos) in positions.iter().enumerate() { 
+                println!("Entity: {} - {:?}", index, pos);
 
-        println!("---------Zip Check---------");
-        let zip_iter = pos.iter().zip(cs.get_components::<Velocity>().unwrap().iter());
+            }
+        }
 
-        for (index, zip) in zip_iter.enumerate() { 
-            println!("Entity: {} - {:?}", index, zip);
+        println!("---------Zip Check w/Entities---------");
+        let positions = cs.get_components::<Position>().unwrap();
+        let velocities = cs.get_components::<Velocity>().unwrap();
+        let zip = positions.iter().zip(velocities.iter());
+
+        for (index, zip) in zip.enumerate() { 
+            println!("Index: {} - {:?}", index, zip);
+        }
+
+        println!("---------Zip Check unwrapped----------");
+        let positions = cs.get_components_unwrapped::<Position>().unwrap();
+        let velocities = cs.get_components_unwrapped::<Velocity>().unwrap();
+        let zip = positions.iter().zip(velocities.iter());
+
+        for (index, zip) in zip.enumerate() { 
+            println!("Index: {} - {:?}", index, zip);
         }
     }
 
@@ -68,5 +80,7 @@ Output
     Entity: 8 - None
     Entity: 9 - None
     Entity: 10 - Some(Position(0.0, 0.0))
-    ---------Zip Check---------
-    Entity: 0 - (Some(Position(1280.0, 720.0)), Some(Velocity(0.0, 0.0)))
+    ---------Zip Check w/Entities---------
+    Index: 0 - (Some(Position(1280.0, 720.0)), Some(Velocity(0.0, 0.0)))
+    ---------Zip Check unwrapped----------
+    Index: 0 - (Position(1280.0, 720.0), Velocity(0.0, 0.0))

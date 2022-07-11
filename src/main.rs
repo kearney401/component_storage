@@ -28,22 +28,31 @@ fn main() {
     let vel_from_cs = cs.get_component::<Velocity>(0).unwrap();
     println!("Entity: 0 - {:?} {:?}", pos_from_cs, vel_from_cs);
 
-    let pos = cs.get_components::<Position>().unwrap();
-
     println!("---------Position Check---------");
-    for (index, pos) in pos.iter().enumerate() { 
-        println!("Entity: {} - {:?}", index, pos);
-    } 
+    if let Some(positions) = cs.get_components::<Position>() { 
+        for (index, pos) in positions.iter().enumerate() { 
+            println!("Entity: {} - {:?}", index, pos);
 
-    println!("---------Zip Check---------");
-    let zip_iter = pos.iter().zip(cs.get_components::<Velocity>().unwrap().iter());
-
-    for (index, zip) in zip_iter.enumerate() { 
-        println!("Entity: {} - {:?}", index, zip);
+        }
     }
 
-    let movement_iter = cs.get_mut_components::<Position>().unwrap().iter().zip(cs.get_mut_components::<Velocity>().unwrap().iter());
-    println!("{:?}", movement_iter);
+    println!("---------Zip Check w/Entities---------");
+    let positions = cs.get_components::<Position>().unwrap();
+    let velocities = cs.get_components::<Velocity>().unwrap();
+    let zip = positions.iter().zip(velocities.iter());
 
-    
+    for (index, zip) in zip.enumerate() { 
+        println!("Index: {} - {:?}", index, zip);
+    }
+
+    println!("---------Zip Check unwrapped----------");
+    let positions = cs.get_components_unwrapped::<Position>().unwrap();
+    let velocities = cs.get_components_unwrapped::<Velocity>().unwrap();
+    let zip = positions.iter().zip(velocities.iter());
+
+    for (index, zip) in zip.enumerate() { 
+        println!("Index: {} - {:?}", index, zip);
+    }
+
+
 }
