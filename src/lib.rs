@@ -113,8 +113,12 @@ impl ComponentStorage {
         }
     }
 
-    pub fn get_components_iter<T>(&self) -> Option<Iter<'_, Option<T>>> where T: 'static { 
-        self.get_vec::<T>().map(|vec_t| vec_t.iter())
+    pub fn get_components<T>(&self) -> Option<&Vec<Option<T>>> where T: 'static { 
+        self.get_vec::<T>()
+    }
+
+    pub fn get_mut_components<T>(&mut self) -> Option<&mut Vec<Option<T>>> where T: 'static { 
+        self.get_mut_vec::<T>()
     }
 
     pub fn remove_component<T>(&mut self, index: usize) where T: 'static { 
@@ -267,10 +271,20 @@ mod tests {
     }
 
     #[test]
-    fn get_components_iter() { 
+    fn get_components() { 
         let mut cs = ComponentStorage::default();
         cs.add_component(0, Bar { x: 100 });
-        match cs.get_components_iter::<Bar>() { 
+        match cs.get_components::<Bar>() { 
+            Some(_) => { }
+            None => { panic!("Failed to get iter for components")}
+        };
+    }
+
+    #[test]
+    fn get_mut_components() { 
+        let mut cs = ComponentStorage::default();
+        cs.add_component(0, Bar { x: 100 });
+        match cs.get_mut_components::<Bar>() { 
             Some(_) => { }
             None => { panic!("Failed to get iter for components")}
         };

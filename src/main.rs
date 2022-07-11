@@ -7,8 +7,6 @@ struct Position(f32, f32);
 struct Velocity(f32, f32);
 
 fn main() {
-    println!("Hello World");
-
     let mut cs = ComponentStorage::default();
 
     let pos = Position(1280.0, 720.0);
@@ -30,21 +28,22 @@ fn main() {
     let vel_from_cs = cs.get_component::<Velocity>(0).unwrap();
     println!("Entity: 0 - {:?} {:?}", pos_from_cs, vel_from_cs);
 
-    let pos_iter = cs.get_components_iter::<Position>().unwrap();
-    let pos_iter_clone = pos_iter.clone();
+    let pos = cs.get_components::<Position>().unwrap();
 
     println!("---------Position Check---------");
-    for (index, pos) in pos_iter.enumerate() { 
+    for (index, pos) in pos.iter().enumerate() { 
         println!("Entity: {} - {:?}", index, pos);
     } 
 
     println!("---------Zip Check---------");
-    let vel_iter = cs.get_components_iter::<Velocity>().unwrap();
-    let zip_iter = pos_iter_clone.zip(vel_iter);
+    let zip_iter = pos.iter().zip(cs.get_components::<Velocity>().unwrap().iter());
 
     for (index, zip) in zip_iter.enumerate() { 
         println!("Entity: {} - {:?}", index, zip);
     }
+
+    let movement_iter = cs.get_mut_components::<Position>().unwrap().iter().zip(cs.get_mut_components::<Velocity>().unwrap().iter());
+    println!("{:?}", movement_iter);
+
     
-    println!("Goodbye World");
 }
