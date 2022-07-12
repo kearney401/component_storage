@@ -1,7 +1,7 @@
 use std::{
     any::{Any, TypeId},
     collections::HashMap,
-    slice::Iter
+    cell::RefCell,
 };
 
 trait AsAny {
@@ -9,7 +9,7 @@ trait AsAny {
     fn as_mut_any(&mut self) -> &mut dyn Any;
 }
 
-impl<T> AsAny for Vec<Option<T>>
+impl<T> AsAny for RefCell<Vec<Option<T>>>
 where
     T: 'static,
 {
@@ -35,11 +35,11 @@ impl ComponentStorage {
         let id = TypeId::of::<T>();
         self.data.entry(id).or_insert_with(|| {
             let vec: Vec<Option<T>> = Vec::new();
-            Box::new(vec)
+            Box::new(RefCell::new(vec))
         });
     }
 
-    fn get_vec<T>(&self) -> Option<&Vec<Option<T>>>
+    fn get_vec<T>(&self) -> Option<&RefCell<Vec<Option<T>>>>
     where
         T: 'static,
     {
@@ -49,10 +49,10 @@ impl ComponentStorage {
             None => return None,
         };
 
-        boxed_vec.as_any().downcast_ref::<Vec<Option<T>>>()
+        boxed_vec.as_any().downcast_ref::<RefCell<Vec<Option<T>>>>()
     }
 
-    fn get_mut_vec<T>(&mut self) -> Option<&mut Vec<Option<T>>>
+    fn get_mut_vec<T>(&mut self) -> Option<&mut RefCell<Vec<Option<T>>>>
     where
         T: 'static,
     {
@@ -62,7 +62,7 @@ impl ComponentStorage {
             None => return None,
         };
 
-        boxed_vec.as_mut_any().downcast_mut::<Vec<Option<T>>>()
+        boxed_vec.as_mut_any().downcast_mut::<RefCell<Vec<Option<T>>>>()
     }
 
     pub fn add_component<T>(&mut self, index: usize, component: T)
@@ -71,7 +71,8 @@ impl ComponentStorage {
     {
         self.add_type::<T>();
         match self.get_mut_vec::<T>() {
-            Some(vec_t) => {
+            Some(ref_cell) => {
+                let vec_t = ref_cell.borrow_mut();
                 if index >= vec_t.len() {
                     vec_t.resize_with(index + 1, || None);
                     vec_t[index] = Some(component)
@@ -86,7 +87,8 @@ impl ComponentStorage {
         T: 'static,
     {
         match self.get_vec::<T>() {
-            Some(vec_t) => {
+            Some(ref_cell) => {
+                let vec_t = ref_cell.borrow();
                 if index < vec_t.len() {
                     vec_t[index].as_ref()
                 } else {
@@ -102,7 +104,8 @@ impl ComponentStorage {
         T: 'static,
     {
         match self.get_mut_vec::<T>() {
-            Some(vec_t) => {
+            Some(ref_cell) => {
+                let vec_t = ref_cell.borrow_mut();
                 if index < vec_t.len() {
                     vec_t[index].as_mut()
                 } else {
@@ -113,17 +116,19 @@ impl ComponentStorage {
         }
     }
 
-    pub fn get_components<T>(&self) -> Option<&Vec<Option<T>>> where T: 'static { 
+    pub fn get_components<T>(&self) -> Option<&RefCell<Vec<Option<T>>>> where T: 'static { 
         self.get_vec::<T>()
+            
     }
 
-    pub fn get_mut_components<T>(&mut self) -> Option<&mut Vec<Option<T>>> where T: 'static { 
+    pub fn get_mut_components<T>(&mut self) -> Option<&mut RefCell<Vec<Option<T>>>> where T: 'static { 
         self.get_mut_vec::<T>()
     }
 
     pub fn get_components_unwrapped<T>(&self) -> Option<Vec<&T>> where T: 'static { 
         
-        if let Some(vec_t) = self.get_vec::<T>() { 
+        if let Some(ref_cell) = self.get_vec::<T>() { 
+            let vec_t = ref_cell.borrow();
             let collection = vec_t.iter()
                 .filter_map(|v| v.as_ref())
                 .collect::<Vec<&T>>();
@@ -135,7 +140,8 @@ impl ComponentStorage {
 
     pub fn get_mut_components_unwrapped<T>(&mut self) -> Option<Vec<&mut T>> where T: 'static { 
         
-        if let Some(vec_t) = self.get_mut_vec::<T>() { 
+        if let Some(ref_cell) = self.get_mut_vec::<T>() { 
+            let vec_t = ref_cell.borrow_mut();
             let collection = vec_t.iter_mut()
                 .filter_map(|v| v.as_mut())
                 .collect::<Vec<&mut T>>();
@@ -147,7 +153,8 @@ impl ComponentStorage {
 
     pub fn remove_component<T>(&mut self, index: usize) where T: 'static { 
         match self.get_mut_vec::<T>() { 
-            Some(vec_t) => { 
+            Some(ref_cell) => { 
+                let mut vec_t = ref_cell.borrow_mut();
                 vec_t[index] = None;
             }
             None => { }
